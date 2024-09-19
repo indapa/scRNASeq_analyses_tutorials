@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Introduction</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="similiar_cells_vector_search_files/libs/clipboard/clipboard.min.js"></script>
+<script src="similiar_cells_vector_search_files/libs/quarto-html/quarto.js"></script>
+<script src="similiar_cells_vector_search_files/libs/quarto-html/popper.min.js"></script>
+<script src="similiar_cells_vector_search_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="similiar_cells_vector_search_files/libs/quarto-html/anchor.min.js"></script>
+<link href="similiar_cells_vector_search_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="similiar_cells_vector_search_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="similiar_cells_vector_search_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="similiar_cells_vector_search_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="similiar_cells_vector_search_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Introduction</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>This notebook is based off this <a href="https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_embedding_search.html?utm_content=303437580&amp;utm_medium=social&amp;utm_source=linkedin&amp;hss_channel=lcp-11301003">tutorial</a> fron <a href="https://chanzuckerberg.github.io/cellxgene-census/">CellXGene</a></p>
+<p>Using the <code>cellxgene_census</code> package we will search Census embeddings to find cells that are similar to a query cell. I found out I had a vCPU limit on the the types of instances I could launch on AWS EC2, I ran this notebook on my local machine with the the good ol’ <a href="https://scanpy-tutorials.readthedocs.io/en/latest/pbmc3k.html">PMBC3k</a> dataset.</p>
+<p>The high level overview is that the code will generate <a href="https://docs.scvi-tools.org/en/1.0.0/tutorials/notebooks/api_overview.html">scVI embeddings</a> of the query cells (the PBMCs) and search the Census scVI embeddings for the most similar cells.</p>
+<section id="downloading-data-and-census-scvi-model" class="level2">
+<h2 class="anchored" data-anchor-id="downloading-data-and-census-scvi-model">Downloading data and Census scVI model</h2>
+<p>Let’s import the necessary libraries and download the data and the Census scVI model.</p>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span> pip install <span class="op">--</span>upgrade  <span class="st">'cellxgene_census[experimental]'</span> scvi<span class="op">-</span>tools</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Requirement already satisfied: scvi-tools in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (1.1.5)
+Collecting scvi-tools
+  Downloading scvi_tools-1.1.6.post2-py3-none-any.whl.metadata (18 kB)
+Requirement already satisfied: cellxgene_census[experimental] in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (1.16.1)
+Requirement already satisfied: tiledbsoma&gt;=1.12.3 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from cellxgene_census[experimental]) (1.14.1)
+Requirement already satisfied: anndata in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from cellxgene_census[experimental]) (0.10.8)
+Requirement already satisfied: numpy&lt;2.0,&gt;=1.23 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from cellxgene_census[experimental]) (1.26.4)
+Requirement already satisfied: requests in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from cellxgene_census[experimental]) (2.32.3)
+Requirement already satisfied: typing-extensions in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from cellxgene_census[experimental]) (4.12.2)
+Requirement already satisfied: s3fs&gt;=2021.06.1 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from cellxgene_census[experimental]) (2024.3.1)
+Requirement already satisfied: torch in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from cellxgene_census[experimental]) (2.4.0)
+Requirement already satisfied: torchdata~=0.7 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from cellxgene_census[experimental]) (0.8.0)
+Requirement already satisfied: scikit-learn&gt;=1.2 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from cellxgene_census[experimental]) (1.5.1)
+Requirement already satisfied: scikit-misc&lt;0.4,&gt;=0.2 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from cellxgene_census[experimental]) (0.3.1)
+Requirement already satisfied: datasets~=2.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from cellxgene_census[experimental]) (2.19.2)
+Requirement already satisfied: tdigest~=0.5 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from cellxgene_census[experimental]) (0.5.2.2)
+Collecting tiledb-vector-search~=0.2 (from cellxgene_census[experimental])
+  Downloading tiledb_vector_search-0.9.0-cp311-cp311-macosx_12_0_arm64.whl.metadata (3.1 kB)
+Requirement already satisfied: docrep&gt;=0.3.2 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (0.3.2)
+Requirement already satisfied: flax in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (0.8.5)
+Requirement already satisfied: h5py&gt;=2.9.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (3.11.0)
+Requirement already satisfied: jax&gt;=0.4.4 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (0.4.31)
+Requirement already satisfied: jaxlib&gt;=0.4.3 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (0.4.31)
+Requirement already satisfied: lightning&gt;=2.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (2.1.4)
+Requirement already satisfied: ml-collections&gt;=0.1.1 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (0.1.1)
+Requirement already satisfied: mudata&gt;=0.1.2 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (0.3.0)
+Requirement already satisfied: numpyro&gt;=0.12.1 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (0.15.2)
+Requirement already satisfied: optax in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (0.2.3)
+Requirement already satisfied: pandas&gt;=1.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (1.5.3)
+Requirement already satisfied: pyro-ppl&gt;=1.6.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (1.9.1)
+Requirement already satisfied: rich&gt;=12.0.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (13.7.1)
+Requirement already satisfied: scipy in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (1.14.0)
+Requirement already satisfied: torchmetrics&gt;=0.11.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (1.4.1)
+Requirement already satisfied: tqdm&gt;=4.56.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scvi-tools) (4.66.5)
+Requirement already satisfied: array-api-compat!=1.5,&gt;1.4 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from anndata-&gt;cellxgene_census[experimental]) (1.8)
+Requirement already satisfied: natsort in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from anndata-&gt;cellxgene_census[experimental]) (8.4.0)
+Requirement already satisfied: packaging&gt;=20.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from anndata-&gt;cellxgene_census[experimental]) (24.1)
+Requirement already satisfied: filelock in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from datasets~=2.0-&gt;cellxgene_census[experimental]) (3.15.4)
+Requirement already satisfied: pyarrow&gt;=12.0.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from datasets~=2.0-&gt;cellxgene_census[experimental]) (12.0.1)
+Requirement already satisfied: pyarrow-hotfix in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from datasets~=2.0-&gt;cellxgene_census[experimental]) (0.6)
+Requirement already satisfied: dill&lt;0.3.9,&gt;=0.3.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from datasets~=2.0-&gt;cellxgene_census[experimental]) (0.3.8)
+Requirement already satisfied: xxhash in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from datasets~=2.0-&gt;cellxgene_census[experimental]) (3.5.0)
+Requirement already satisfied: multiprocess in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from datasets~=2.0-&gt;cellxgene_census[experimental]) (0.70.16)
+Requirement already satisfied: fsspec&lt;=2024.3.1,&gt;=2023.1.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from fsspec[http]&lt;=2024.3.1,&gt;=2023.1.0-&gt;datasets~=2.0-&gt;cellxgene_census[experimental]) (2024.3.1)
+Requirement already satisfied: aiohttp in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from datasets~=2.0-&gt;cellxgene_census[experimental]) (3.10.0)
+Requirement already satisfied: huggingface-hub&gt;=0.21.2 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from datasets~=2.0-&gt;cellxgene_census[experimental]) (0.25.0)
+Requirement already satisfied: pyyaml&gt;=5.1 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from datasets~=2.0-&gt;cellxgene_census[experimental]) (6.0.2)
+Requirement already satisfied: six in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from docrep&gt;=0.3.2-&gt;scvi-tools) (1.16.0)
+Requirement already satisfied: ml-dtypes&gt;=0.2.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from jax&gt;=0.4.4-&gt;scvi-tools) (0.4.0)
+Requirement already satisfied: opt-einsum in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from jax&gt;=0.4.4-&gt;scvi-tools) (3.3.0)
+Requirement already satisfied: lightning-utilities&lt;2.0,&gt;=0.8.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from lightning&gt;=2.0-&gt;scvi-tools) (0.11.6)
+Requirement already satisfied: pytorch-lightning in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from lightning&gt;=2.0-&gt;scvi-tools) (2.4.0)
+Requirement already satisfied: absl-py in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from ml-collections&gt;=0.1.1-&gt;scvi-tools) (2.1.0)
+Requirement already satisfied: contextlib2 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from ml-collections&gt;=0.1.1-&gt;scvi-tools) (21.6.0)
+Requirement already satisfied: multipledispatch in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from numpyro&gt;=0.12.1-&gt;scvi-tools) (1.0.0)
+Requirement already satisfied: python-dateutil&gt;=2.8.1 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from pandas&gt;=1.0-&gt;scvi-tools) (2.9.0.post0)
+Requirement already satisfied: pytz&gt;=2020.1 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from pandas&gt;=1.0-&gt;scvi-tools) (2024.1)
+Requirement already satisfied: pyro-api&gt;=0.1.1 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from pyro-ppl&gt;=1.6.0-&gt;scvi-tools) (0.1.2)
+Requirement already satisfied: charset-normalizer&lt;4,&gt;=2 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from requests-&gt;cellxgene_census[experimental]) (3.3.2)
+Requirement already satisfied: idna&lt;4,&gt;=2.5 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from requests-&gt;cellxgene_census[experimental]) (3.7)
+Requirement already satisfied: urllib3&lt;3,&gt;=1.21.1 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from requests-&gt;cellxgene_census[experimental]) (2.2.2)
+Requirement already satisfied: certifi&gt;=2017.4.17 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from requests-&gt;cellxgene_census[experimental]) (2024.7.4)
+Requirement already satisfied: markdown-it-py&gt;=2.2.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from rich&gt;=12.0.0-&gt;scvi-tools) (3.0.0)
+Requirement already satisfied: pygments&lt;3.0.0,&gt;=2.13.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from rich&gt;=12.0.0-&gt;scvi-tools) (2.18.0)
+Requirement already satisfied: aiobotocore&lt;3.0.0,&gt;=2.5.4 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from s3fs&gt;=2021.06.1-&gt;cellxgene_census[experimental]) (2.13.1)
+Requirement already satisfied: joblib&gt;=1.2.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scikit-learn&gt;=1.2-&gt;cellxgene_census[experimental]) (1.4.2)
+Requirement already satisfied: threadpoolctl&gt;=3.1.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scikit-learn&gt;=1.2-&gt;cellxgene_census[experimental]) (3.5.0)
+Requirement already satisfied: accumulation-tree in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from tdigest~=0.5-&gt;cellxgene_census[experimental]) (0.6.2)
+Requirement already satisfied: pyudorandom in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from tdigest~=0.5-&gt;cellxgene_census[experimental]) (1.0.0)
+Collecting tiledb-cloud&gt;=0.11 (from tiledb-vector-search~=0.2-&gt;cellxgene_census[experimental])
+  Downloading tiledb_cloud-0.12.26-py3-none-any.whl.metadata (3.3 kB)
+Requirement already satisfied: tiledb&gt;=0.32.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from tiledb-vector-search~=0.2-&gt;cellxgene_census[experimental]) (0.32.0)
+Requirement already satisfied: attrs&gt;=22.2 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (24.1.0)
+Requirement already satisfied: numba&gt;=0.58.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (0.60.0)
+Requirement already satisfied: scanpy&gt;=1.9.2 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (1.10.2)
+Requirement already satisfied: somacore==1.0.15 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (1.0.15)
+Requirement already satisfied: sympy in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from torch-&gt;cellxgene_census[experimental]) (1.13.1)
+Requirement already satisfied: networkx in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from torch-&gt;cellxgene_census[experimental]) (3.3)
+Requirement already satisfied: jinja2 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from torch-&gt;cellxgene_census[experimental]) (3.1.4)
+Requirement already satisfied: msgpack in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from flax-&gt;scvi-tools) (1.0.8)
+Requirement already satisfied: orbax-checkpoint in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from flax-&gt;scvi-tools) (0.5.23)
+Requirement already satisfied: tensorstore in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from flax-&gt;scvi-tools) (0.1.64)
+Requirement already satisfied: chex&gt;=0.1.86 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from optax-&gt;scvi-tools) (0.1.86)
+Requirement already satisfied: etils[epy] in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from optax-&gt;scvi-tools) (1.9.2)
+Requirement already satisfied: botocore&lt;1.34.132,&gt;=1.34.70 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from aiobotocore&lt;3.0.0,&gt;=2.5.4-&gt;s3fs&gt;=2021.06.1-&gt;cellxgene_census[experimental]) (1.34.131)
+Requirement already satisfied: wrapt&lt;2.0.0,&gt;=1.10.10 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from aiobotocore&lt;3.0.0,&gt;=2.5.4-&gt;s3fs&gt;=2021.06.1-&gt;cellxgene_census[experimental]) (1.16.0)
+Requirement already satisfied: aioitertools&lt;1.0.0,&gt;=0.5.1 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from aiobotocore&lt;3.0.0,&gt;=2.5.4-&gt;s3fs&gt;=2021.06.1-&gt;cellxgene_census[experimental]) (0.11.0)
+Requirement already satisfied: aiohappyeyeballs&gt;=2.3.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from aiohttp-&gt;datasets~=2.0-&gt;cellxgene_census[experimental]) (2.3.4)
+Requirement already satisfied: aiosignal&gt;=1.1.2 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from aiohttp-&gt;datasets~=2.0-&gt;cellxgene_census[experimental]) (1.3.1)
+Requirement already satisfied: frozenlist&gt;=1.1.1 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from aiohttp-&gt;datasets~=2.0-&gt;cellxgene_census[experimental]) (1.4.1)
+Requirement already satisfied: multidict&lt;7.0,&gt;=4.5 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from aiohttp-&gt;datasets~=2.0-&gt;cellxgene_census[experimental]) (6.0.5)
+Requirement already satisfied: yarl&lt;2.0,&gt;=1.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from aiohttp-&gt;datasets~=2.0-&gt;cellxgene_census[experimental]) (1.9.4)
+Requirement already satisfied: toolz&gt;=0.9.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from chex&gt;=0.1.86-&gt;optax-&gt;scvi-tools) (0.12.1)
+Requirement already satisfied: setuptools in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from lightning-utilities&lt;2.0,&gt;=0.8.0-&gt;lightning&gt;=2.0-&gt;scvi-tools) (69.5.1)
+Requirement already satisfied: mdurl~=0.1 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from markdown-it-py&gt;=2.2.0-&gt;rich&gt;=12.0.0-&gt;scvi-tools) (0.1.2)
+Requirement already satisfied: llvmlite&lt;0.44,&gt;=0.43.0dev0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from numba&gt;=0.58.0-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (0.43.0)
+Requirement already satisfied: legacy-api-wrap&gt;=1.4 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scanpy&gt;=1.9.2-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (1.4)
+Requirement already satisfied: matplotlib&gt;=3.6 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scanpy&gt;=1.9.2-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (3.9.1)
+Requirement already satisfied: patsy in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scanpy&gt;=1.9.2-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (0.5.6)
+Requirement already satisfied: pynndescent&gt;=0.5 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scanpy&gt;=1.9.2-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (0.5.13)
+Requirement already satisfied: seaborn&gt;=0.13 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scanpy&gt;=1.9.2-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (0.13.2)
+Requirement already satisfied: session-info in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scanpy&gt;=1.9.2-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (1.0.0)
+Requirement already satisfied: statsmodels&gt;=0.13 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scanpy&gt;=1.9.2-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (0.14.2)
+Requirement already satisfied: umap-learn!=0.5.0,&gt;=0.5 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from scanpy&gt;=1.9.2-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (0.5.6)
+Collecting cloudpickle&lt;3,&gt;=1.4.1 (from tiledb-cloud&gt;=0.11-&gt;tiledb-vector-search~=0.2-&gt;cellxgene_census[experimental])
+  Downloading cloudpickle-2.2.1-py3-none-any.whl.metadata (6.9 kB)
+Requirement already satisfied: importlib-metadata in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from tiledb-cloud&gt;=0.11-&gt;tiledb-vector-search~=0.2-&gt;cellxgene_census[experimental]) (8.2.0)
+Collecting tblib~=1.7 (from tiledb-cloud&gt;=0.11-&gt;tiledb-vector-search~=0.2-&gt;cellxgene_census[experimental])
+  Downloading tblib-1.7.0-py2.py3-none-any.whl.metadata (24 kB)
+Requirement already satisfied: MarkupSafe&gt;=2.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from jinja2-&gt;torch-&gt;cellxgene_census[experimental]) (2.1.5)
+Requirement already satisfied: nest_asyncio in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from orbax-checkpoint-&gt;flax-&gt;scvi-tools) (1.6.0)
+Requirement already satisfied: protobuf in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from orbax-checkpoint-&gt;flax-&gt;scvi-tools) (5.27.3)
+Requirement already satisfied: mpmath&lt;1.4,&gt;=1.1.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from sympy-&gt;torch-&gt;cellxgene_census[experimental]) (1.3.0)
+Requirement already satisfied: jmespath&lt;2.0.0,&gt;=0.7.1 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from botocore&lt;1.34.132,&gt;=1.34.70-&gt;aiobotocore&lt;3.0.0,&gt;=2.5.4-&gt;s3fs&gt;=2021.06.1-&gt;cellxgene_census[experimental]) (1.0.1)
+Requirement already satisfied: contourpy&gt;=1.0.1 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from matplotlib&gt;=3.6-&gt;scanpy&gt;=1.9.2-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (1.2.1)
+Requirement already satisfied: cycler&gt;=0.10 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from matplotlib&gt;=3.6-&gt;scanpy&gt;=1.9.2-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (0.12.1)
+Requirement already satisfied: fonttools&gt;=4.22.0 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from matplotlib&gt;=3.6-&gt;scanpy&gt;=1.9.2-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (4.53.1)
+Requirement already satisfied: kiwisolver&gt;=1.3.1 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from matplotlib&gt;=3.6-&gt;scanpy&gt;=1.9.2-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (1.4.5)
+Requirement already satisfied: pillow&gt;=8 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from matplotlib&gt;=3.6-&gt;scanpy&gt;=1.9.2-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (10.4.0)
+Requirement already satisfied: pyparsing&gt;=2.3.1 in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from matplotlib&gt;=3.6-&gt;scanpy&gt;=1.9.2-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (3.1.2)
+Requirement already satisfied: importlib_resources in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from etils[epy]-&gt;optax-&gt;scvi-tools) (6.4.0)
+Requirement already satisfied: zipp in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from etils[epy]-&gt;optax-&gt;scvi-tools) (3.19.2)
+Requirement already satisfied: stdlib-list in /Users/indapa/miniconda3/envs/sc_best_practices/lib/python3.11/site-packages (from session-info-&gt;scanpy&gt;=1.9.2-&gt;tiledbsoma&gt;=1.12.3-&gt;cellxgene_census[experimental]) (0.10.0)
+Downloading scvi_tools-1.1.6.post2-py3-none-any.whl (387 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 387.9/387.9 kB 4.7 MB/s eta 0:00:00a 0:00:01
+Downloading tiledb_vector_search-0.9.0-cp311-cp311-macosx_12_0_arm64.whl (14.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.0/14.0 MB 10.8 MB/s eta 0:00:0000:0100:01
+Downloading tiledb_cloud-0.12.26-py3-none-any.whl (786 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 786.4/786.4 kB 22.4 MB/s eta 0:00:0000:01
+Downloading cloudpickle-2.2.1-py3-none-any.whl (25 kB)
+Downloading tblib-1.7.0-py2.py3-none-any.whl (12 kB)
+Installing collected packages: tblib, cloudpickle, tiledb-cloud, tiledb-vector-search, scvi-tools
+  Attempting uninstall: scvi-tools
+    Found existing installation: scvi-tools 1.1.5
+    Uninstalling scvi-tools-1.1.5:
+      Successfully uninstalled scvi-tools-1.1.5
+Successfully installed cloudpickle-2.2.1 scvi-tools-1.1.6.post2 tblib-1.7.0 tiledb-cloud-0.12.26 tiledb-vector-search-0.9.0</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>warnings.filterwarnings(<span class="st">"ignore"</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> anndata</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cellxgene_census.experimental</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cellxgene_census</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> scanpy <span class="im">as</span> sc</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> scvi</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>CENSUS_VERSION <span class="op">=</span> <span class="st">"2024-07-01"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>mkdir <span class="op">-</span>p data</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>wget <span class="op">--</span>no<span class="op">-</span>check<span class="op">-</span>certificate <span class="op">-</span>q <span class="op">-</span>O data<span class="op">/</span>pbmc3k_filtered_gene_bc_matrices.tar.gz http:<span class="op">//</span>cf<span class="fl">.10</span><span class="er">xgenomics</span>.com<span class="op">/</span>samples<span class="op">/</span>cell<span class="op">-</span>exp<span class="op">/</span><span class="fl">1.1.0</span><span class="op">/</span>pbmc3k<span class="op">/</span>pbmc3k_filtered_gene_bc_matrices.tar.gz</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>tar <span class="op">-</span>xzf data<span class="op">/</span>pbmc3k_filtered_gene_bc_matrices.tar.gz <span class="op">-</span>C data<span class="op">/</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next download the Census embeddings model by first identiying the S3 URI.</p>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> cellxgene_census.open_soma(census_version<span class="op">=</span>CENSUS_VERSION) <span class="im">as</span> census:</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    census <span class="op">=</span> cellxgene_census.open_soma(census_version<span class="op">=</span>CENSUS_VERSION)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    scvi_info <span class="op">=</span> cellxgene_census.experimental.get_embedding_metadata_by_name(</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        embedding_name<span class="op">=</span><span class="st">"scvi"</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        organism<span class="op">=</span><span class="st">"homo_sapiens"</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        census_version<span class="op">=</span>CENSUS_VERSION,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>scvi_info[<span class="st">"model_link"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="4">
+<pre><code>'s3://cellxgene-contrib-public/models/scvi/2024-07-01/homo_sapiens/model.pt'</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>mkdir <span class="op">-</span>p scvi<span class="op">-</span>human<span class="op">-</span><span class="dv">2024</span><span class="op">-</span><span class="dv">0</span><span class="er">7</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>wget <span class="op">--</span>no<span class="op">-</span>check<span class="op">-</span>certificate <span class="op">-</span>q <span class="op">-</span>O scvi<span class="op">-</span>human<span class="op">-</span><span class="dv">2024</span><span class="op">-</span><span class="dv">0</span><span class="er">7</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span><span class="op">/</span>model.pt https:<span class="op">//</span>cellxgene<span class="op">-</span>contrib<span class="op">-</span>public.s3.us<span class="op">-</span>west<span class="op">-</span><span class="fl">2.</span><span class="er">amazonaws</span>.com<span class="op">/</span>models<span class="op">/</span>scvi<span class="op">/</span><span class="dv">2024</span><span class="op">-</span><span class="dv">0</span><span class="er">7</span><span class="op">-</span><span class="dv">0</span><span class="er">1</span><span class="op">/</span>homo_sapiens<span class="op">/</span>model.pt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="make-an-anndata-of-the-pbmc3k-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="make-an-anndata-of-the-pbmc3k-dataset">Make an AnnData of the PBMC3k dataset</h2>
+<div class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>adata <span class="op">=</span> sc.read_10x_mtx(<span class="st">"data/filtered_gene_bc_matrices/hg19/"</span>, var_names<span class="op">=</span><span class="st">"gene_ids"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>adata.var[<span class="st">"ensembl_id"</span>] <span class="op">=</span> adata.var.index</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>adata.obs[<span class="st">"n_counts"</span>] <span class="op">=</span> adata.X.<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>adata.obs[<span class="st">"joinid"</span>] <span class="op">=</span> <span class="bu">list</span>(<span class="bu">range</span>(adata.n_obs))</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>adata.obs[<span class="st">"batch"</span>] <span class="op">=</span> <span class="st">"unassigned"</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co">#lets do some basic filtering</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>sc.pp.filter_cells(adata, min_genes<span class="op">=</span><span class="dv">200</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>sc.pp.filter_genes(adata, min_cells<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next, run the data through the scVI model and extract the cell embeddings.These cells are are our query cells.</p>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>scvi.model.SCVI.prepare_query_anndata(adata, <span class="st">"scvi-human-2024-07-01"</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>vae_q <span class="op">=</span> scvi.model.SCVI.load_query_data(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    adata,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"scvi-human-2024-07-01"</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># This allows for a simple forward pass</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>vae_q.is_trained <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>latent <span class="op">=</span> vae_q.get_latent_representation()</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>adata.obsm[<span class="st">"scvi"</span>] <span class="op">=</span> latent <span class="co">#these are the embeddings</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>INFO     File scvi-human-2024-07-01/model.pt already downloaded                                                    
+INFO     Found 22.4625% reference vars in query data.                                                              
+INFO     File scvi-human-2024-07-01/model.pt already downloaded                                                    </code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filter out missing features</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>adata <span class="op">=</span> adata[:, adata.var[<span class="st">"gene_symbols"</span>].notnull().values].copy()</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>adata.var.set_index(<span class="st">"gene_symbols"</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># assign placeholder cell_type and tissue_general labels</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>adata.var_names <span class="op">=</span> adata.var[<span class="st">"ensembl_id"</span>]</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>adata.obs[<span class="st">"cell_type"</span>] <span class="op">=</span> <span class="st">"Query - PBMC 10X"</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>adata.obs[<span class="st">"tissue_general"</span>] <span class="op">=</span> <span class="st">"Query - PBMC 10X"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="compute-leiden-clusters-on-the-scvi-embeddings" class="level2">
+<h2 class="anchored" data-anchor-id="compute-leiden-clusters-on-the-scvi-embeddings">Compute Leiden clusters on the scVI embeddings</h2>
+<div class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>sc.pp.neighbors(adata, n_neighbors<span class="op">=</span><span class="dv">15</span>, use_rep<span class="op">=</span><span class="st">"scvi"</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>sc.tl.umap(adata)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>sc.tl.leiden(adata)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>sc.pl.umap(adata, color<span class="op">=</span><span class="st">"leiden"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>OMP: Info #276: omp_set_nested routine deprecated, please use omp_set_max_active_levels instead.</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="similiar_cells_vector_search_files/figure-html/cell-10-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="search-the-census-embeddings-for-similar-cells" class="level2">
+<h2 class="anchored" data-anchor-id="search-the-census-embeddings-for-similar-cells">Search the Census embeddings for similar cells</h2>
+<p>Finally, we will search the Census embeddings for the most similar cells to the query cells.</p>
+<div class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>neighbors <span class="op">=</span> cellxgene_census.experimental.find_nearest_obs(</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"scvi"</span>, <span class="st">"homo_sapiens"</span>, CENSUS_VERSION, query<span class="op">=</span>adata, k<span class="op">=</span><span class="dv">30</span>, memory_GiB<span class="op">=</span><span class="dv">8</span>, nprobe<span class="op">=</span><span class="dv">20</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>CPU times: user 2min 58s, sys: 2min 2s, total: 5min 1s
+Wall time: 10min 15s</code></pre>
+</div>
+</div>
+<p>The scvi embeddings of the query cells were searched against the Census embeddings to find the most similar cells in Euclidean distance. The distances and soma_join ids are returned in neighbors.</p>
+<div class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>neighbors</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="11">
+<pre><code>NeighborObs(distances=array([[0.14981087, 0.15093209, 0.24764827, ..., 0.31863752, 0.31922767,
+        0.32021427],
+       [0.29017177, 0.32429656, 0.3460446 , ..., 0.56234473, 0.56352055,
+        0.5670927 ],
+       [0.40463755, 0.41439012, 0.41772968, ..., 0.55779386, 0.56181395,
+        0.56271565],
+       ...,
+       [0.19712518, 0.25228167, 0.27800363, ..., 0.3479049 , 0.34811276,
+        0.3518863 ],
+       [0.36992392, 0.38329887, 0.39696068, ..., 0.56015193, 0.56454164,
+        0.56465834],
+       [0.33078685, 0.3308514 , 0.35727897, ..., 0.5287459 , 0.5310724 ,
+        0.53260446]], dtype=float32), neighbor_ids=array([[53938900, 56894874, 53976967, ..., 35410014, 53999332, 53010089],
+       [ 6276632, 18807209,  7251536, ..., 12705987, 11951694, 11980870],
+       [16903285, 21674180, 50898826, ..., 35424173, 44145922, 36066801],
+       ...,
+       [36336282, 52999747, 53523979, ..., 54143971, 53062159, 46403244],
+       [36217923, 46782331, 35719817, ..., 54091908, 46313955, 46545266],
+       [35205445, 56547047, 36327798, ..., 34826668, 35829524, 54033347]],
+      dtype=uint64))</code></pre>
+</div>
+</div>
+<p>Next, make an AnnData object of the each query cell’s single nearest neightbor in scVI space.</p>
+<div class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> cellxgene_census.open_soma(census_version<span class="op">=</span>CENSUS_VERSION) <span class="im">as</span> census:</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    neighbors_adata <span class="op">=</span> cellxgene_census.get_anndata(</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>        census,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"homo_sapiens"</span>,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">"RNA"</span>,</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>        obs_coords<span class="op">=</span><span class="bu">sorted</span>(neighbors.neighbor_ids[:, <span class="dv">0</span>].tolist()),</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>        obs_embeddings<span class="op">=</span>[<span class="st">"scvi"</span>],</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>        X_name<span class="op">=</span><span class="st">"normalized"</span>,</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        column_names<span class="op">=</span>{<span class="st">"obs"</span>: [<span class="st">"soma_joinid"</span>, <span class="st">"tissue"</span>, <span class="st">"tissue_general"</span>, <span class="st">"cell_type"</span>]},</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>neighbors_adata.var_names <span class="op">=</span> neighbors_adata.var[<span class="st">"feature_id"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Make a UMAP of the single nearest neighbors in scVI space.</p>
+<div class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>sc.pp.neighbors(neighbors_adata, n_neighbors<span class="op">=</span><span class="dv">15</span>, use_rep<span class="op">=</span><span class="st">"scvi"</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>sc.tl.umap(neighbors_adata)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>sc.pl.umap(neighbors_adata, color<span class="op">=</span><span class="st">"tissue_general"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="similiar_cells_vector_search_files/figure-html/cell-14-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>Not suprisingly, the single nearest neighbors in scVI space are very similar to the query cells with the same general tissue type (blood).</p>
+<p>Next, concat the query cells with the single nearest neighbors in scVI space and make a UMAP of the combined cells.</p>
+<div class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>adata_concat <span class="op">=</span> anndata.concat([adata, neighbors_adata])</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>sc.pp.neighbors(adata_concat, n_neighbors<span class="op">=</span><span class="dv">15</span>, use_rep<span class="op">=</span><span class="st">"scvi"</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>sc.tl.umap(adata_concat)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>sc.pl.umap(adata_concat, color<span class="op">=</span>[<span class="st">"tissue_general"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="similiar_cells_vector_search_files/figure-html/cell-15-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="predicting-cell-metadata" class="level2">
+<h2 class="anchored" data-anchor-id="predicting-cell-metadata">Predicting cell metadata</h2>
+<p>The experimental API has a method to predict metadata features of the query cells, like <code>tissue_general</code> and <code>cell_type</code> based on the Census neighbors.</p>
+<div class="cell" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> cellxgene_census.experimental.predict_obs_metadata(</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"homo_sapiens"</span>, CENSUS_VERSION, neighbors, [<span class="st">"tissue_general"</span>, <span class="st">"cell_type"</span>]</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>predictions</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="16">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">tissue_general</th>
+<th data-quarto-table-cell-role="th">tissue_general_confidence</th>
+<th data-quarto-table-cell-role="th">cell_type</th>
+<th data-quarto-table-cell-role="th">cell_type_confidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>blood</td>
+<td>0.833333</td>
+<td>CD4-positive, alpha-beta T cell</td>
+<td>0.366667</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>lymph node</td>
+<td>0.366667</td>
+<td>B cell</td>
+<td>0.433333</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>blood</td>
+<td>0.966667</td>
+<td>central memory CD4-positive, alpha-beta T cell</td>
+<td>0.266667</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>blood</td>
+<td>0.900000</td>
+<td>classical monocyte</td>
+<td>0.733333</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>blood</td>
+<td>0.900000</td>
+<td>natural killer cell</td>
+<td>0.633333</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2695</td>
+<td>blood</td>
+<td>0.800000</td>
+<td>classical monocyte</td>
+<td>0.600000</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2696</td>
+<td>immune system</td>
+<td>0.366667</td>
+<td>plasmablast</td>
+<td>0.566667</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2697</td>
+<td>blood</td>
+<td>0.966667</td>
+<td>B cell</td>
+<td>0.633333</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2698</td>
+<td>blood</td>
+<td>0.866667</td>
+<td>B cell</td>
+<td>0.600000</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2699</td>
+<td>blood</td>
+<td>0.866667</td>
+<td>CD4-positive, alpha-beta T cell</td>
+<td>0.333333</td>
+</tr>
+</tbody>
+</table>
+
+<p>2700 rows × 4 columns</p>
+</div>
+</div>
+</div>
+<p>Note, that the code above uses all the <code>k=30</code> neighbors to predict the metadata features of the query cells, unlike the previous code that only used the single nearest neighbor when making the visualization.</p>
+<div class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>adata</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="17">
+<pre><code>AnnData object with n_obs × n_vars = 2700 × 1797
+    obs: 'n_counts', 'joinid', 'batch', 'n_genes', '_scvi_batch', '_scvi_labels', 'cell_type', 'tissue_general', 'leiden'
+    var: 'ensembl_id', 'n_cells'
+    uns: '_scvi_uuid', '_scvi_manager_uuid', 'neighbors', 'umap', 'leiden', 'leiden_colors'
+    obsm: 'scvi', 'X_umap'
+    obsp: 'distances', 'connectivities'</code></pre>
+</div>
+</div>
+<p>Let’s add these predictions to the orginal query cells AnnData object and make a UMAP of the predicted cell type</p>
+<div class="cell" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>predictions.index <span class="op">=</span> adata.obs.index</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> predictions.rename(columns<span class="op">=</span>{<span class="st">"cell_type"</span>: <span class="st">"predicted_cell_type"</span>})</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>adata.obs <span class="op">=</span> pd.concat([adata.obs, predictions], axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>sc.pl.umap(adata, color<span class="op">=</span><span class="st">"predicted_cell_type"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="similiar_cells_vector_search_files/figure-html/cell-18-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>Next, let’s annotate the Leiden clusters calculated at the beginning step by popular vote, where each cluster gets annotated with the most common predicted cell type.</p>
+<div class="cell" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>adata.obs[<span class="st">"predicted_consolidated_cell_type"</span>] <span class="op">=</span> <span class="st">""</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> leiden_cluster <span class="kw">in</span> adata.obs[<span class="st">"leiden"</span>].drop_duplicates():</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    most_popular_type <span class="op">=</span> (</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>        adata.obs.loc[adata.obs[<span class="st">"leiden"</span>] <span class="op">==</span> leiden_cluster,].value_counts(<span class="st">"predicted_cell_type"</span>).index[<span class="dv">0</span>]</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    adata.obs.loc[adata.obs[<span class="st">"leiden"</span>] <span class="op">==</span> leiden_cluster, <span class="st">"predicted_consolidated_cell_type"</span>] <span class="op">=</span> most_popular_type</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>sc.pl.umap(adata, color<span class="op">=</span><span class="st">"predicted_consolidated_cell_type"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="similiar_cells_vector_search_files/figure-html/cell-20-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
